@@ -76,13 +76,6 @@ const Login = () => {
   const classes = useStyles();
 
   const handleChangeInput = (e) => {
-    if (rememberMe) {
-      localStorage.setItem("email", user.email);
-      localStorage.setItem("password", e.target.value);
-    } else {
-      localStorage.removeItem("email");
-      localStorage.removeItem("password");
-    }
     setUser({ ...user, [e.target.name]: e.target.value });
   };
 
@@ -123,6 +116,10 @@ const Login = () => {
     { id: "5", image: carrossel5 },
   ];
 
+  const LazyImage = React.memo(({ src, alt }) => (
+    <img src={src} alt={alt} style={{ width: "100%", height: "100vh", objectFit: "cover" }} loading="lazy" />
+  ));
+
   return (
     <>
       <div className={classes.root}>
@@ -137,11 +134,7 @@ const Login = () => {
           >
             {imagens.map((image, index) => (
               <div key={index}>
-                <img
-                  src={image.image}
-                  alt={`Slide ${index + 1}`}
-                  style={{ width: "100%", height: "100vh", objectFit: "cover" }}
-                />
+                <LazyImage src={image.image} alt={`Slide ${index + 1}`} />
               </div>
             ))}
           </Carousel>

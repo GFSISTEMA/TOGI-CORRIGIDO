@@ -33,6 +33,8 @@ import { IconButton, InputAdornment } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import 'react-phone-input-2/lib/style.css';
 import { validateCpfCnpj} from "../../utils/validateCpfCnpj";
+import InputMask from 'react-input-mask';
+
 {/*const Copyright = () => {
   return (
     <Typography 
@@ -183,16 +185,14 @@ const SignUp = () => {
   };
 
   useEffect(() => {
-    setLoading(true);
     const fetchData = async () => {
-      const planList = await getPlanPublicList({isPublic: true});
-
+      setLoading(true);
+      const planList = await getPlanPublicList({ isPublic: true });
       setPlans(planList);
       setLoading(false);
     };
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [getPlanPublicList]);
 
   const handleSignUp = async (values) => {
     try {
@@ -206,32 +206,22 @@ const SignUp = () => {
 
   return (
     <div className={classes.root}>
-      {/* <CssBaseline /> */}
       <div className={classes.leftScreen}>
         <img
           src={signup}
           style={{ height: "100%", width: "100%", objectFit: "cover" }}
+          alt="Signup Background"
         />
       </div>
       <div className={classes.paper}>
-        {/* <Avatar className={classes.avatar}>
-          <LockOutlinedIcon />
-        </Avatar> */}
-        <img src={soLogo} style={{ maxWidth: '40%', height: 'auto' }} />
+        <img src={soLogo} style={{ maxWidth: '40%', height: 'auto' }} alt="Logo" />
         <Typography component="h1" variant="h5">
           {i18n.t("signup.title")}
         </Typography>
-        {/* <form className={classes.form} noValidate onSubmit={handleSignUp}> */}
         <Formik
           initialValues={user}
-          enableReinitialize={true}
           validationSchema={UserSchema}
-          onSubmit={(values, actions) => {
-            setTimeout(() => {
-              handleSignUp(values);
-              actions.setSubmitting(false);
-            }, 400);
-          }}
+          onSubmit={handleSignUp}
         >
           {({ touched, errors, isSubmitting, values, setFieldValue }) => (
             <Form className={classes.form}>
@@ -248,7 +238,6 @@ const SignUp = () => {
                     fullWidth
                     id="name"
                     label={i18n.t("signup.form.name")}
-                    // autoFocus
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -268,7 +257,8 @@ const SignUp = () => {
                 </Grid>
                 <Grid item xs={12}>
                   <Field
-                    as={TextField}
+                    as={InputMask}
+                    mask="999.999.999-99"
                     variant="outlined"
                     fullWidth
                     size="small"
@@ -277,6 +267,14 @@ const SignUp = () => {
                     error={touched.document && Boolean(errors.document)}
                     helperText={touched.document && errors.document}
                     name="document"
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value.replace(/\D/g, '').length === 14) {
+                        e.target.setAttribute('mask', '99.999.999/9999-99');
+                      } else {
+                        e.target.setAttribute('mask', '999.999.999-99');
+                      }
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -482,39 +480,33 @@ const SignUp = () => {
                 {i18n.t("signup.buttons.submit")}
               </Button>
               <div style={{ textAlign: "end" }}>
-                <Grid item>
-                  <Link
-                    href="#"
-                    variant="body2"
-                    component={RouterLink}
-                    to="/login"
+                <Link
+                  href="#"
+                  variant="body2"
+                  component={RouterLink}
+                  to="/login"
+                >
+                  {i18n.t("signup.buttons.login")}
+                </Link>
+                <Box mt={2} textAlign="center">
+                  <Typography 
+                    variant="body2" 
+                    color="textPrimary" 
+                    style={{ color: 'black' }}
                   >
-                    {i18n.t("signup.buttons.login")}
-                  </Link>
-				  {/* Adicionando o texto abaixo */}
-					<Box mt={2} textAlign="center">
-					  <Typography 
-						variant="body2" 
-						color="textPrimary" 
-						style={{
-						color: 'black',  // Cor do texto como preto
-					 }}
-				   >
-					{"Baseado no projeto: "}
-					<Link color="inherit" href="https://github.com/canove">
-						Canove
-					</Link>{" "}
-					{new Date().getFullYear()}
-					{"."}
-					</Typography>
-				  </Box>
-                </Grid>
+                    {"Baseado no projeto: "}
+                    <Link color="inherit" href="https://github.com/canove">
+                      Canove
+                    </Link>{" "}
+                    {new Date().getFullYear()}
+                    {"."}
+                  </Typography>
+                </Box>
               </div>
             </Form>
           )}
         </Formik>
       </div>
-      {/*<Box mt={7}><Copyright /></Box>*/}
     </div>
   );
 };
