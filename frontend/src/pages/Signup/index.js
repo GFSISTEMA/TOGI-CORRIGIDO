@@ -33,8 +33,6 @@ import { IconButton, InputAdornment } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import 'react-phone-input-2/lib/style.css';
 import { validateCpfCnpj} from "../../utils/validateCpfCnpj";
-import InputMask from 'react-input-mask';
-
 {/*const Copyright = () => {
   return (
     <Typography 
@@ -257,8 +255,7 @@ const SignUp = () => {
                 </Grid>
                 <Grid item xs={12}>
                   <Field
-                    as={InputMask}
-                    mask="999.999.999-99"
+                    as={TextField}
                     variant="outlined"
                     fullWidth
                     size="small"
@@ -267,14 +264,6 @@ const SignUp = () => {
                     error={touched.document && Boolean(errors.document)}
                     helperText={touched.document && errors.document}
                     name="document"
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (value.replace(/\D/g, '').length === 14) {
-                        e.target.setAttribute('mask', '99.999.999/9999-99');
-                      } else {
-                        e.target.setAttribute('mask', '999.999.999-99');
-                      }
-                    }}
                   />
                 </Grid>
                 <Grid item xs={12}>
