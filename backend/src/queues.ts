@@ -1021,7 +1021,7 @@ async function handleInvoiceCreate() {
             dueDate: moment(dueDate).format(),
             detail: plan.name,
             status: "open",
-            value: plan.amount,
+            value: plan.amount.replace(',','.'),
             users: plan.users,
             connections: plan.connections,
             queues: plan.queues,
@@ -1043,7 +1043,7 @@ async function handleInvoiceCreate() {
                         pass: 'senha'
                       }
                     });
- 
+
                     const mailOptions = {
                       from: 'heenriquega@gmail.com', // sender address
                       to: `${c.email}`, // receiver (use array of string for a list)
@@ -1057,7 +1057,7 @@ async function handleInvoiceCreate() {
           Qualquer duvida estamos a disposição!
                       `// plain text body
                     };
- 
+
                     transporter.sendMail(mailOptions, (err, info) => {
                       if (err)
                         console.log(err)

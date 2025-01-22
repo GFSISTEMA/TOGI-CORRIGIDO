@@ -46,10 +46,10 @@ export const createSubscription = async (
 
   const _price: any = plan.amount
   // const price: any = _price.toLocaleString("us-US", { minimumFractionDigits: 2 }).replace(",", ".")
-  const price: any = formatter.format(_price).replace('$', '')
+  // const price: any = formatter.format(_price).replace('$', '')
 
   const devedor: any = { nome: updateCompany.name }
-
+  const price = _price.toLocaleString("pt-br", { minimumFractionDigits: 2 }).replace(",", ".")
   const doc = updateCompany.document.replace(/\D/g, "");
 
   if (doc.length === 11) {
@@ -57,6 +57,7 @@ export const createSubscription = async (
   } else {
     devedor.cnpj = doc
   }
+  const chave = process.env.GERENCIANET_PIX_KEY;
 
   const body = {
     calendario: {
@@ -68,7 +69,7 @@ export const createSubscription = async (
     valor: {
       original: price
     },
-    chave: process.env.GERENCIANET_CHAVEPIX,
+    chave,
     solicitacaoPagador: `#Fatura:${invoiceId}`
   };
 

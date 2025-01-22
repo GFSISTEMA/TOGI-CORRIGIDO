@@ -127,152 +127,6 @@ const sendMessageImage = async (
   verifyMessage(sentMessage, ticket, contact);
 };
 
-// const sendDialog = async (
-//   choosenQueue: Chatbot,
-//   wbot: Session,
-//   contact: Contact,
-//   ticket: Ticket
-// ) => {
-//   const showChatBots = await ShowChatBotServices(choosenQueue.id);
-//   if (showChatBots.options) {
-
-//     const buttonActive = await Setting.findOne({
-//       where: {
-//         key: "chatBotType",
-//         companyId: ticket.companyId
-//       }
-//     });
-
-//     const typeBot = buttonActive?.value || "text";
-
-//     const botText = async () => {
-//       let options = "";
-
-//       showChatBots.options.forEach((option, index) => {
-//         options += `*${index + 1}* - ${option.name}\n`;
-//       });
-
-//       const optionsBack =
-//         options.length > 0
-//           ? `${options}\n*#* Voltar para o menu principal`
-//           : options;
-
-//       if (options.length > 0) {
-//         const body = `\u200e${choosenQueue.greetingMessage}\n\n${optionsBack}`;
-//         const sendOption = await sendMessage(wbot, contact, ticket, body);
-//         return sendOption;
-//       }
-
-//       const body = `\u200e${choosenQueue.greetingMessage}`;
-//       const send = await sendMessage(wbot, contact, ticket, body);
-//       return send;
-//     };
-
-//     const botButton = async () => {
-//       const buttons = [];
-//       showChatBots.options.forEach((option, index) => {
-//         buttons.push({
-//           buttonId: `${index + 1}`,
-//           buttonText: { displayText: option.name },
-//           type: 1
-//         });
-//       });
-
-//       if (buttons.length > 0) {
-//         const buttonMessage = {
-//           text: `\u200e${choosenQueue.greetingMessage}`,
-//           buttons,
-//           headerType: 1
-//         };
-
-//         // const send = await wbot.sendMessage(
-//         //   `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,
-//         //   buttonMessage
-//         // );
-
-//         await wbot.presenceSubscribe(`${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,)
-//         await sleep(1500)
-//         await wbot.sendPresenceUpdate('composing', `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,)
-//         await sleep(1000)
-//         await wbot.sendPresenceUpdate('paused', `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,)
-//         const send = await wbot.sendMessage(
-//           `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,
-//           buttonMessage
-//         );
-
-//         await verifyMessage(send, ticket, contact);
-
-//         return send;
-//       }
-
-//       const body = `\u200e${choosenQueue.greetingMessage}`;
-//       const send = await sendMessage(wbot, contact, ticket, body);
-
-//       return send;
-//     };
-
-//     const botList = async () => {
-//       const sectionsRows = [];
-//       showChatBots.options.forEach((queue, index) => {
-//         sectionsRows.push({
-//           title: queue.name,
-//           rowId: `${index + 1}`
-//         });
-//       });
-
-//       if (sectionsRows.length > 0) {
-//         const sections = [
-//           {
-//             title: "Menu",
-//             rows: sectionsRows
-//           }
-//         ];
-
-//         const listMessage = {
-//           text: formatBody(`\u200e${choosenQueue.greetingMessage}`, ticket),
-//           buttonText: "Escolha uma opção",
-//           sections
-//         };
-
-//         await wbot.presenceSubscribe(`${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,)
-//         await sleep(1500)
-//         await wbot.sendPresenceUpdate('composing', `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,)
-//         await sleep(1000)
-//         await wbot.sendPresenceUpdate('paused', `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,)
-
-//         const sendMsg = await wbot.sendMessage(
-//           `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,
-//           listMessage
-//         );
-
-//         await verifyMessage(sendMsg, ticket, contact);
-
-//         return sendMsg;
-//       }
-
-//       const body = `\u200e${choosenQueue.greetingMessage}`;
-//       const send = await sendMessage(wbot, contact, ticket, body);
-
-//       return send;
-//     };
-
-//     if (typeBot === "text") {
-//       return botText();
-//     }
-
-//     if (typeBot === "button" && showChatBots.options.length > 3) {
-//       return botText();
-//     }
-
-//     if (typeBot === "button" && showChatBots.options.length <= 3) {
-//       return botButton();
-//     }
-
-//     if (typeBot === "list") {
-//       return botList();
-//     }
-//   }
-// };
 
 const sendDialog = async (
   choosenQueue: Chatbot,
@@ -781,7 +635,7 @@ export const sayChatbot = async (
 
       await verifyMessage(sendMsg, ticket, ticket.contact);
     }
-
+    await DeleteDialogChatBotsServices(contact.id);
     return;
   }
 
@@ -917,31 +771,6 @@ export const sayChatbot = async (
       }
 
       return send;
-    }else{
-      await wbot.sendMessage(`${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`, {
-        text: 'Opção inválida, por favor escolha uma opção válida abaixo:',
-      });
-      await sleep(500);
-      let optionsInitial = "";
-
-      queue.chatbots.forEach((chatbot, index) => {
-         optionsInitial += `*[ ${index + 1} ]* - ${chatbot.name}\n`;
-       });
-
-      const body = formatBody(
-        `\u200e${queue.greetingMessage}\n\n${optionsInitial}\n*[ # ]* Voltar para o menu principal\n*[ Sair ]* Encerrar atendimento`,
-        ticket
-      );
-
-      const sentMessage = await wbot.sendMessage(
-        `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,
-        {
-          text: body
-        }
-      );
-
-      await verifyMessage(sentMessage, ticket, contact);
-
     }
 
   }
@@ -951,8 +780,6 @@ export const sayChatbot = async (
     const bots = await ShowChatBotServices(getStageBot.chatbotId);
 
     const choosenQueue = bots.options[+selected - 1]
-
-
 
     if (choosenQueue) {
       if (!choosenQueue.greetingMessage) {
@@ -1090,14 +917,6 @@ export const sayChatbot = async (
       await deleteAndCreateDialogStage(contact, choosenQueue.id, ticket);
       const send = await sendDialog(choosenQueue, wbot, contact, ticket);
       return send;
-    }else{
-      await wbot.sendMessage(`${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`, {
-        text: 'Opção inválida, por favor escolha uma opção válida abaixo:',
-      });
-      await sleep(500);
-      await deleteAndCreateDialogStage(contact, getStageBot.chatbotId, ticket);
-      const send = await sendDialog(getStageBot.chatbots, wbot, contact, ticket);
-      return send
     }
   }
 

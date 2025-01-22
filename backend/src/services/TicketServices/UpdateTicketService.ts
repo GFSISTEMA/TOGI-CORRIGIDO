@@ -21,6 +21,7 @@ import CreateLogTicketService from "./CreateLogTicketService";
 import TicketTag from "../../models/TicketTag";
 import Tag from "../../models/Tag";
 import formatBody from "../../helpers/Mustache";
+import DeleteDialogChatBotsServices from '../DialogChatBotsServices/DeleteDialogChatBotsServices';
 
 interface TicketData {
   status?: string;
@@ -277,6 +278,8 @@ const UpdateTicketService = async ({
         status: "closed"
       });
 
+      await DeleteDialogChatBotsServices(ticket.contactId);
+
       io.to(oldStatus)
         .to(ticketId.toString())
         .emit(`company-${ticket.companyId}-ticket`, {
@@ -488,6 +491,8 @@ const UpdateTicketService = async ({
         ticketId,
         type: "open"
       });
+
+      await DeleteDialogChatBotsServices(ticket.contactId);
     }
 
     await ticketTraking.save();

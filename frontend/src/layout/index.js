@@ -1,10 +1,10 @@
-import React, { useState, useContext, useEffect, useMemo } from "react";
+import React, { useState, useContext, useEffect, useMemo, useRef } from "react";
 import clsx from "clsx";
 import moment from "moment";
 
-import { isNill } from "lodash"
-import SoftPhone from 'react-softphone'
-import { WebSocketInterface } from 'jssip';
+import { isNill } from "lodash";
+import SoftPhone from "react-softphone";
+import { WebSocketInterface } from "jssip";
 
 import {
   makeStyles,
@@ -29,7 +29,7 @@ import MenuIcon from "@material-ui/icons/Menu";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import AccountCircle from "@material-ui/icons/AccountCircle";
 import CachedIcon from "@material-ui/icons/Cached";
-import whatsappIcon from '../assets/nopicture.png'
+import whatsappIcon from "../assets/nopicture.png";
 
 import MainListItems from "./MainListItems";
 import NotificationsPopOver from "../components/NotificationsPopOver";
@@ -42,7 +42,7 @@ import { i18n } from "../translate/i18n";
 import toastError from "../errors/toastError";
 import AnnouncementsPopover from "../components/AnnouncementsPopover";
 
-import logo from "../assets/logo.png";
+//import logo from "../assets/SoLogo.png";
 import { socketConnection } from "../services/socket";
 import ChatPopover from "../pages/Chat/ChatPopover";
 
@@ -50,13 +50,15 @@ import { useDate } from "../hooks/useDate";
 import UserLanguageSelector from "../components/UserLanguageSelector";
 
 import ColorModeContext from "../layout/themeContext";
-import Brightness4Icon from '@material-ui/icons/Brightness4';
-import Brightness7Icon from '@material-ui/icons/Brightness7';
+import Brightness4Icon from "@material-ui/icons/Brightness4";
+import Brightness7Icon from "@material-ui/icons/Brightness7";
 import { getBackendUrl } from "../config";
+
+import InternalChat from "../components/InternalChat"; //Importa internal Chat
 
 const backendUrl = getBackendUrl();
 
-const drawerWidth = 240;
+const drawerWidth = 95;
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -79,8 +81,8 @@ const useStyles = makeStyles((theme) => ({
   },
   toolbar: {
     paddingRight: 24, // keep right padding when drawer closed
-    color: theme.palette.dark.main,
-    background: theme.palette.barraSuperior,
+    color: "#FFF",
+    background: "#FFF",
   },
   toolbarIcon: {
     display: "flex",
@@ -88,14 +90,15 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: "flex-end",
     backgroundColor: "#FFF",
     backgroundSize: "cover",
-    padding: "0 8px",
+    padding: "0 0px",
     minHeight: "48px",
     [theme.breakpoints.down("sm")]: {
-      height: "48px"
-    }
+      height: "48px",
+    },
   },
   appBar: {
-    zIndex: theme.zIndex.drawer + 1,
+    // zIndex: theme.zIndex.drawer + 1,
+    // width: "600px",
     transition: theme.transitions.create(["width", "margin"], {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
@@ -109,8 +112,8 @@ const useStyles = makeStyles((theme) => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
     [theme.breakpoints.down("sm")]: {
-      display: "none"
-    }
+      display: "none",
+    },
   },
   menuButton: {
     marginRight: 36,
@@ -119,12 +122,15 @@ const useStyles = makeStyles((theme) => ({
     display: "none",
   },
   title: {
-    flexGrow: 1,
-    fontSize: 14,
-    color: "white",
-  },
+  flexGrow: 1,
+  fontSize: 14,
+  color: "white",
+  textAlign: "left", // Alinhamento horizontal (opcional)
+  marginLeft: "110px", // Desloca horizontalmente para a esquerda
+  marginTop: "15px", // Move o título para baixo
+},
   drawerPaper: {
-    position: "relative",
+    // position: "absolute",
     whiteSpace: "nowrap",
     width: drawerWidth,
     transition: theme.transitions.create("width", {
@@ -140,9 +146,6 @@ const useStyles = makeStyles((theme) => ({
       duration: theme.transitions.duration.leavingScreen,
     }),
     width: theme.spacing(7),
-    [theme.breakpoints.up("sm")]: {
-      width: theme.spacing(9),
-    },
   },
 
   appBarSpacer: {
@@ -151,7 +154,6 @@ const useStyles = makeStyles((theme) => ({
   content: {
     flex: 1,
     overflow: "auto",
-
   },
   container: {
     paddingTop: theme.spacing(4),
@@ -161,17 +163,54 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(2),
     display: "flex",
     overflow: "auto",
-    flexDirection: "column"
+    flexDirection: "column",
   },
   containerWithScroll: {
+    display: "flex",
     flex: 1,
-    padding: theme.spacing(1),
-    overflowY: "scroll",
+    // padding: theme.spacing(1),
+    // overflowY: "scroll",
     ...theme.scrollbarStyles,
+    justifyContent: "center",
+    alignItems: "center",
+    overflowX: "hidden",
   },
   NotificationsPopOver: {
     // color: theme.barraSuperior.secondary.main,
   },
+  newMenu: {
+    height: "100%",
+    backgroundColor: "#1B3546",
+    width: "100px",
+    zIndex: theme.zIndex.drawer + 1,
+    position: "relative",
+    overflow: "auto",
+    scrollbarWidth: "none",
+    transition: theme.transitions.create("width", {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    [theme.breakpoints.down("xs")]: {
+      display: "none",
+    },
+  },
+  newMenuOpen: {
+    [theme.breakpoints.down("xs")]: {
+      display: "block",
+      position: "absolute",
+      zIndex: 1200,
+    },
+  },
+  newMenuClose: {
+    transition: theme.transitions.create("width", {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+    [theme.breakpoints.down("xs")]: {
+      display: "none",
+    },
+  },
+
   logo: {
     width: "100%",
     height: "48px",
@@ -181,47 +220,67 @@ const useStyles = makeStyles((theme) => ({
       height: "100%",
       maxWidth: 180,
     },
-    logo: theme.logo
+    logo: theme.logo,
   },
   avatar2: {
     width: theme.spacing(4),
     height: theme.spacing(4),
-    cursor: 'pointer',
-    borderRadius: '50%',
-    border: '2px solid #ccc',
+    cursor: "pointer",
+    borderRadius: "50%",
+    border: "2px solid #ccc",
+    [theme.breakpoints.down("xs")]: {
+      display: "none",
+    },
   },
   updateDiv: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  hiddenBreakPoint: {
+    [theme.breakpoints.down("xs")]: {
+      display: "none",
+    },
+  },
+  breakPoint: {
+    [theme.breakpoints.up("xs")]: {
+      visibility: "hidden",
+    },
+    [theme.breakpoints.down("xs")]: {
+      display: "flex",
+      visibility: "visible",
+    },
   },
 }));
 
 const StyledBadge = withStyles((theme) => ({
   badge: {
-    backgroundColor: '#44b700',
-    color: '#44b700',
+    backgroundColor: "#44b700",
+    color: "#44b700",
     boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
-    '&::after': {
-      position: 'absolute',
+    [theme.breakpoints.down("xs")]: {
+      display: "none",
+    },
+    "&::after": {
+      position: "absolute",
       top: 0,
       left: 0,
-      width: '100%',
-      height: '100%',
-      borderRadius: '50%',
-      animation: '$ripple 1.2s infinite ease-in-out',
-      border: '1px solid currentColor',
+      width: "100%",
+      height: "100%",
+      borderRadius: "50%",
+      animation: "$ripple 1.2s infinite ease-in-out",
+      border: "1px solid currentColor",
       content: '""',
     },
   },
-  '@keyframes ripple': {
-    '0%': {
-      transform: 'scale(.8)',
+  "@keyframes ripple": {
+    "0%": {
+      transform: "scale(.8)",
       opacity: 1,
     },
-    '100%': {
-      transform: 'scale(2.4)',
+    "100%": {
+      transform: "scale(2.4)",
       opacity: 0,
     },
   },
@@ -240,7 +299,7 @@ const LoggedInLayout = ({ children, themeToggle }) => {
   const [userModalOpen, setUserModalOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const { handleLogout, loading } = useContext(AuthContext);
+  const { handleLogout, loading, showDialogButton } = useContext(AuthContext);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerVariant, setDrawerVariant] = useState("permanent");
   // const [dueDate, setDueDate] = useState("");
@@ -248,44 +307,70 @@ const LoggedInLayout = ({ children, themeToggle }) => {
 
   const theme = useTheme();
   const { colorMode } = useContext(ColorModeContext);
-  const greaterThenSm = useMediaQuery(theme.breakpoints.up("sm"));
+  const greaterThanXs = useMediaQuery(theme.breakpoints.up("sm"));
 
   const [volume, setVolume] = useState(localStorage.getItem("volume") || 1);
-
+  const menuRef = useRef(null);
   const { dateToClient } = useDate();
   const [profileUrl, setProfileUrl] = useState(null);
+  const [chatInternal, setChatInternal] = useState(true); // Internal Chat
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const mainListItems = useMemo(() => <MainListItems drawerOpen={drawerOpen}  collapsed={!drawerOpen} />, [user, drawerOpen])
+  const mainListItems = useMemo(
+    () => <MainListItems drawerOpen={drawerOpen} collapsed={!drawerOpen} />,
+    [user, drawerOpen]
+  );
+  useEffect(() => {
+    if (greaterThanXs) {
+      setDrawerOpen(true);
+    } else {
+      setDrawerOpen(false);
+    }
+  }, [greaterThanXs]);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target) &&
+        !greaterThanXs
+      ) {
+        setDrawerOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [greaterThanXs]);
 
   const config = {
-    domain: '192.168.2.4', // sip-server@your-domain.io
-    uri: 'sip:202@192.168.2.4', // sip:sip-user@your-domain.io
-    password: 'btelefonia12', //  PASSWORD ,
-    ws_servers: 'wss://202@192.168.2.4:8089/ws', //ws server
-    sockets: new WebSocketInterface('wss://192.168.2.4:8089/ws'),
-    display_name: '202',//jssip Display Name
-    websocket_url: 'wss://192.168.2.4:443',
-    sip_outbound_ur: 'udp://192.168.2.4:5060',
-    debug: true // Turn debug messages on
-
+    domain: "192.168.2.4", // sip-server@your-domain.io
+    uri: "sip:202@192.168.2.4", // sip:sip-user@your-domain.io
+    password: "btelefonia12", //  PASSWORD ,
+    ws_servers: "wss://202@192.168.2.4:8089/ws", //ws server
+    sockets: new WebSocketInterface("wss://192.168.2.4:8089/ws"),
+    display_name: "202", //jssip Display Name
+    websocket_url: "wss://192.168.2.4:443",
+    sip_outbound_ur: "udp://192.168.2.4:5060",
+    debug: true, // Turn debug messages on
   };
   const setConnectOnStartToLocalStorage = (newValue) => {
     // Handle save the auto connect value to local storage
-    return true
-  }
+    return true;
+  };
   const setNotifications = (newValue) => {
     // Handle save the Show notifications of an incoming call to local storage
-    return true
-  }
+    return true;
+  };
   const setCallVolume = (newValue) => {
     // Handle save the call Volume value to local storage
-    return true
-  }
+    return true;
+  };
   const setRingVolume = (newValue) => {
     // Handle save the Ring Volume value to local storage
-    return true
-  }
+    return true;
+  };
   //################### CODIGOS DE TESTE #########################################
   // useEffect(() => {
   //   navigator.getBattery().then((battery) => {
@@ -333,7 +418,6 @@ const LoggedInLayout = ({ children, themeToggle }) => {
   // }, []);
   //##############################################################################
 
-
   useEffect(() => {
     if (document.body.offsetWidth > 600) {
       if (user.defaultMenu === "closed") {
@@ -360,11 +444,15 @@ const LoggedInLayout = ({ children, themeToggle }) => {
     const userId = user.id;
 
     const socket = socketConnection({ companyId, userId: user.id });
+    if (!socket) {
+      return () => {};
+    }
     const ImageUrl = user.profileImage;
     if (ImageUrl !== undefined && ImageUrl !== null)
-      setProfileUrl(`${backendUrl}/public/company${companyId}/user/${ImageUrl}`);
-    else 
-      setProfileUrl(`${process.env.FRONTEND_URL}/nopicture.png`)
+      setProfileUrl(
+        `${backendUrl}/public/company${companyId}/user/${ImageUrl}`
+      );
+    else setProfileUrl(`${process.env.FRONTEND_URL}/nopicture.png`);
 
     socket.on(`company-${companyId}-auth`, (data) => {
       if (data.user.id === +userId) {
@@ -374,7 +462,6 @@ const LoggedInLayout = ({ children, themeToggle }) => {
           window.location.reload();
         }, 1000);
       }
-
     });
 
     socket.emit("userStatus");
@@ -418,7 +505,7 @@ const LoggedInLayout = ({ children, themeToggle }) => {
 
   const handleRefreshPage = () => {
     window.location.reload(false);
-  }
+  };
 
   const handleMenuItemClick = () => {
     const { innerWidth: width } = window;
@@ -429,59 +516,76 @@ const LoggedInLayout = ({ children, themeToggle }) => {
 
   const toggleColorMode = () => {
     colorMode.toggleColorMode();
-  }
+  };
 
   if (loading) {
     return <BackdropLoading />;
   }
+  const handleToggleDrawer = () => {
+    setDrawerOpen(!drawerOpen);
+  };
 
   return (
     <div className={classes.root}>
-      <Drawer
-        variant={drawerVariant}
-        className={drawerOpen ? classes.drawerPaper : classes.drawerPaperClose}
-        classes={{
-          paper: clsx(
-            classes.drawerPaper,
-            !drawerOpen && classes.drawerPaperClose
-          ),
-        }}
-        open={drawerOpen}
+      <div
+        ref={menuRef}
+        className={clsx(
+          classes.newMenu,
+          drawerOpen && classes.newMenuOpen,
+          !drawerOpen && classes.newMenuClose
+        )}
       >
-        <div className={classes.toolbarIcon}>
-          <img src={logo} style={{ display: "block", margin: "0 auto", height: "50px", width: "100%" }} alt="logo" />
-          <IconButton onClick={() => setDrawerOpen(!drawerOpen)}>
-            <ChevronLeftIcon />
-          </IconButton>
-        </div>
         <List className={classes.containerWithScroll}>
           {mainListItems}
           {/* <MainListItems drawerClose={drawerClose} collapsed={!drawerOpen} /> */}
         </List>
-        <Divider />
-      </Drawer>
-
+      </div>
       <AppBar
-        position="absolute"
-        className={clsx(classes.appBar, drawerOpen && classes.appBarShift)}
-        color="primary"
+        // classes={classes.appBar}
+        style={{
+          backgroundColor: "white",
+          width: "100%",
+          position: "absolute",
+          borderTopLeftRadius: "15px",
+          borderBottomLeftRadius: "15px",
+        }}
       >
-        <Toolbar variant="dense" className={classes.toolbar}>
-          <IconButton
-            edge="start"
-            variant="contained"
-            aria-label="open drawer"
-            style={{ color: "white" }}
-            onClick={() => setDrawerOpen(!drawerOpen)}
-            className={clsx(
-              classes.menuButton,
-              drawerOpen && classes.menuButtonHidden
-            )}
+	  
+        <Toolbar
+          variant="dense"
+          style={{
+            backgroundColor: "#162c3b",
+            paddingLeft: 5,
+            borderTopLeftRadius: "10px",
+            borderBottomLeftRadius: "10px",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              width: "100%",
+            }}
           >
-            <MenuIcon />
-          </IconButton>
-
-          <Typography
+		  
+		  {/*<div
+              className={classes.breakPoint}
+              style={{ cursor: "pointer" }}
+              onClick={handleToggleDrawer}
+            >
+			
+              <img
+                src={logo}
+                style={{
+                  display: "block",
+                  margin: "0 auto",
+                  height: "50px",
+                }}
+                alt="logo"
+              />
+		  </div>*/}
+			
+			<Typography
             component="h2"
             variant="h6"
             color="inherit"
@@ -489,7 +593,7 @@ const LoggedInLayout = ({ children, themeToggle }) => {
             className={classes.title}
           >
             {/* {greaterThenSm && user?.profile === "admin" && getDateAndDifDays(user?.company?.dueDate).difData < 7 ? ( */}
-            {greaterThenSm && user?.profile === "admin" && user?.company?.dueDate ? (
+            {greaterThanXs && user?.profile === "admin" && user?.company?.dueDate ? (
               <>
                 {i18n.t("mainDrawer.appBar.user.message")} <b>{user.name}</b>, {i18n.t("mainDrawer.appBar.user.messageEnd")} <b>{user?.company?.name}</b>! ({i18n.t("mainDrawer.appBar.user.active")} {dateToClient(user?.company?.dueDate)})
               </>
@@ -499,95 +603,118 @@ const LoggedInLayout = ({ children, themeToggle }) => {
               </>
             )}
           </Typography>
-
-          {/* DESABILITADO POIS TEM BUGS */}
-          { <UserLanguageSelector /> }
-          {/* <SoftPhone
-            callVolume={33} //Set Default callVolume
-            ringVolume={44} //Set Default ringVolume
-            connectOnStart={false} //Auto connect to sip
-            notifications={false} //Show Browser Notification of an incoming call
-            config={config} //Voip config
-            setConnectOnStartToLocalStorage={setConnectOnStartToLocalStorage} // Callback function
-            setNotifications={setNotifications} // Callback function
-            setCallVolume={setCallVolume} // Callback function
-            setRingVolume={setRingVolume} // Callback function
-            timelocale={'UTC-3'} //Set time local for call history
-          /> */}
-          <IconButton edge="start" onClick={toggleColorMode}>
-            {theme.mode === 'dark' ? <Brightness7Icon style={{ color: "white" }} /> : <Brightness4Icon style={{ color: "white" }} />}
-          </IconButton>
-
-          <NotificationsVolume
-            setVolume={setVolume}
-            volume={volume}
-          />
-
-          <IconButton
-            onClick={handleRefreshPage}
-            aria-label={i18n.t("mainDrawer.appBar.refresh")}
-            color="inherit"
-          >
-            <CachedIcon style={{ color: "white" }} />
-          </IconButton>
-
-          {/* <DarkMode themeToggle={themeToggle} /> */}
-
-          {user.id && <NotificationsPopOver volume={volume} />}
-
-          <AnnouncementsPopover />
-
-          <ChatPopover />
-
-          <div>
-            <StyledBadge
-              overlap="circular"
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'right',
+            
+			<div
+              style={{
+                display: "flex",
+                cursor: "pointer",
+                alignItems: "center",
               }}
-              variant="dot"
-              onClick={handleMenu}
             >
-              <Avatar alt="Multi100" className={classes.avatar2} src={profileUrl} />
-            </StyledBadge>
+			
+              {/* DESABILITADO POIS TEM BUGS */}
+              {<UserLanguageSelector />}
+              {/* <SoftPhone
+                callVolume={33} //Set Default callVolume
+                ringVolume={44} //Set Default ringVolume
+                connectOnStart={false} //Auto connect to sip
+                notifications={false} //Show Browser Notification of an incoming call
+                config={config} //Voip config
+                setConnectOnStartToLocalStorage={setConnectOnStartToLocalStorage} // Callback function
+                setNotifications={setNotifications} // Callback function
+                setCallVolume={setCallVolume} // Callback function
+                setRingVolume={setRingVolume} // Callback function
+                timelocale={'UTC-3'} //Set time local for call history
+              /> */}
+              {/* <div className={classes.hiddenBreakPoint}>
+                <IconButton edge="start" onClick={toggleColorMode}>
+                  {theme.mode === "dark" ? (
+                    <Brightness7Icon style={{ color: "black" }} />
+                  ) : (
+                    <Brightness4Icon style={{ color: "black" }} />
+                  )}
+                </IconButton>
+              </div> */}
+              <NotificationsVolume setVolume={setVolume} volume={volume} />
+              {user.id && <NotificationsPopOver volume={volume} />}
+              <div className={classes.hiddenBreakPoint}>
+                <IconButton
+                  onClick={handleRefreshPage}
+                  aria-label={i18n.t("mainDrawer.appBar.refresh")}
+                  color="inherit"
+                >
+                  <CachedIcon style={{ color: "white" }} />
+                </IconButton>
+              </div>
+              <div className={classes.hiddenBreakPoint}>
+                <AnnouncementsPopover />
+              </div>
+              <div>
+                <ChatPopover />
+              </div>
 
-            <UserModal
-              open={userModalOpen}
-              onClose={() => setUserModalOpen(false)}
-              onImageUpdate={(newProfileUrl) => setProfileUrl(newProfileUrl)}
-              userId={user?.id}
-            />
+              {/* <div
+                style={{
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <StyledBadge
+                  overlap="circular"
+                  anchorOrigin={{
+                    vertical: "bottom",
+                    horizontal: "right",
+                  }}
+                  variant="dot"
+                  onClick={handleMenu}
+                >
+                  <Avatar
+                    alt="Multi100"
+                    className={classes.avatar2}
+                    src={profileUrl}
+                  />
+                </StyledBadge>
 
-            <Menu
-              id="menu-appbar"
-              anchorEl={anchorEl}
-              getContentAnchorEl={null}
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "right",
-              }}
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              open={menuOpen}
-              onClose={handleCloseMenu}
-            >
-              <MenuItem onClick={handleOpenUserModal}>
-                {i18n.t("mainDrawer.appBar.user.profile")}
-              </MenuItem>
-              <MenuItem onClick={handleClickLogout}>
-                {i18n.t("mainDrawer.appBar.user.logout")}
-              </MenuItem>
-            </Menu>
+                <UserModal
+                  open={userModalOpen}
+                  onClose={() => setUserModalOpen(false)}
+                  onImageUpdate={(newProfileUrl) =>
+                    setProfileUrl(newProfileUrl)
+                  }
+                  userId={user?.id}
+                />
+
+                <Menu
+                  id="menu-appbar"
+                  anchorEl={anchorEl}
+                  getContentAnchorEl={null}
+                  anchorOrigin={{
+                    vertical: "bottom",
+                    horizontal: "right",
+                  }}
+                  transformOrigin={{
+                    vertical: "top",
+                    horizontal: "right",
+                  }}
+                  open={menuOpen}
+                  onClose={handleCloseMenu}
+                >
+                  <MenuItem onClick={handleOpenUserModal}>
+                    {i18n.t("mainDrawer.appBar.user.profile")}
+                  </MenuItem>
+                  <MenuItem onClick={handleClickLogout}>
+                    {i18n.t("mainDrawer.appBar.user.logout")}
+                  </MenuItem>
+                </Menu>
+              </div> */}
+            </div>
           </div>
-
         </Toolbar>
       </AppBar>
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
-
+		{showDialogButton && (<InternalChat />)}
         {children ? children : null}
       </main>
     </div>
