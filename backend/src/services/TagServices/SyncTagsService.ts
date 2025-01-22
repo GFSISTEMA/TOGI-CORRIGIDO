@@ -1,4 +1,4 @@
-//Corrigido por Pedro Figueiredo para a comunidade EquipeChat
+//Corrigido por Pedro Figueiredo para a comunidade ZapmyChat
 import Tag from "../../models/Tag";
 import ContactTag from "../../models/ContactTag";
 import TicketTag from '../../models/TicketTag';

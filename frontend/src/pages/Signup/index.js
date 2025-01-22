@@ -460,7 +460,7 @@ const SignUp = () => {
                       >
                         Li e aceito os termos de uso do produto e declaro que
                         estou, integralmente, de acordo com estes Termos e com o
-                        uso da plataforma NOME DA EMPRESA, bem como que, neste ato,
+                        uso da plataforma ZapmyChat, bem como que, neste ato,
                         possuo os necessários poderes para contratar e assumir
                         as declarações previstas nestes Termos.
                       </span>
