@@ -503,33 +503,35 @@ const MainListItems = (props, { collapsed }) => {
               </Tooltip>
             }
           />
-          <ListItemLink
-            to="/moments"
-            // primary={i18n.t("mainDrawer.listItems.chatsTempoReal")}
-            icon={
-              <Tooltip
-                title={i18n.t("mainDrawer.listItems.chatsTempoReal")}
-                arrow
-                color="#FFF"
-                placement="right"
-              >
-                <MenuButton
-                  style={{
-                    marginLeft: 10,
-                  }}
+          {isAdmin && (
+            <ListItemLink
+              to="/moments"
+              // primary={i18n.t("mainDrawer.listItems.chatsTempoReal")}
+              icon={
+                <Tooltip
+                  title={i18n.t("mainDrawer.listItems.chatsTempoReal")}
+                  arrow
+                  color="#FFF"
+                  placement="right"
                 >
-                  <ViewListOutlinedIcon
-                    color="inherit"
+                  <MenuButton
                     style={{
-                      color: "#FFF",
-                      width: 20,
-                      height: 20,
+                      marginLeft: 10,
                     }}
-                  />
-                </MenuButton>
-              </Tooltip>
-            }
-          />
+                  >
+                    <ViewListOutlinedIcon
+                      color="inherit"
+                      style={{
+                        color: "#FFF",
+                        width: 20,
+                        height: 20,
+                      }}
+                    />
+                  </MenuButton>
+                </Tooltip>
+              }
+            />
+          )}
           <ListItemLink
             to="/quick-messages"
             // primary={i18n.t("mainDrawer.listItems.quickMessages")}
