@@ -799,35 +799,36 @@ export default function Options(props) {
       </Grid>
       <br></br>
       {/*-----------------ASAAS-----------------*/}
-      <Grid spacing={3} container
-        style={{ marginBottom: 10 }}>
-        <Tabs
-          indicatorColor="primary"
-          textColor="primary"
-          scrollButtons="on"
-          variant="scrollable"
-          className={classes.tab}
-        >
-          <Tab label="ASAAS" />
-
-        </Tabs>
-        <Grid xs={12} sm={12} md={12} item>
-          <FormControl className={classes.selectContainer}>
-            <TextField
-              id="asaas"
-              name="asaas"
-              margin="dense"
-              label="Token Asaas"
-              variant="outlined"
-              value={asaasToken}
-              onChange={async (e) => {
-                handleAsaasToken(e.target.value);
-              }}
-            >
-            </TextField>
-          </FormControl>
+      {isSuper() && (
+        <Grid spacing={3} container
+          style={{ marginBottom: 10 }}>
+          <Tabs
+            indicatorColor="primary"
+            textColor="primary"
+            scrollButtons="on"
+            variant="scrollable"
+            className={classes.tab}
+          >
+            <Tab label="ASAAS" />
+          </Tabs>
+          <Grid xs={12} sm={12} md={12} item>
+            <FormControl className={classes.selectContainer}>
+              <TextField
+                id="asaas"
+                name="asaas"
+                margin="dense"
+                label="Token Asaas"
+                variant="outlined"
+                value={asaasToken}
+                onChange={async (e) => {
+                  handleAsaasToken(e.target.value);
+                }}
+              >
+              </TextField>
+            </FormControl>
+          </Grid>
         </Grid>
-      </Grid>
+      )}
       <br></br>
       {/*-----------------LGPD-----------------*/}
       {enableLGPD === "enabled" && (
